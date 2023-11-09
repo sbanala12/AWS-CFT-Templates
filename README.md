@@ -4,7 +4,7 @@ Welcome!
 
 Here you'll find CloudFormation templates aimed at simplifying the deployment of AWS services. Designed with reusability in mind, these templates are a time-efficient tool for setting up your AWS infrastructure. Presently, the repository includes templates for:
 
-1. AWS ECS, complete with Route 53, Load Balancer, IAM, Target Groups, Security Group, and Elastic Container Registry integration.
+1. AWS ECS complete setup with Route 53, Load Balancer, IAM, Target Groups, Security Group, and Elastic Container Registry integration.
 2. Cognito.
 3. ACM Certificates.
 4. CloudFront.
