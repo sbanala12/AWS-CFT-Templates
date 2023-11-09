@@ -2,7 +2,7 @@
 
 ## We are going to build below setup using CloudFormation Tempalte 
 
-<img src="https://github.com/sbanala12/AWS-CFT-Templates/blob/sbanala12-ECS/misc_files/Ecs_setup.png" width="1600" height="500">
+<img src="https://github.com/sbanala12/AWS-CFT-Templates/blob/sbanala12-ECS/misc_files/Ecs_setup.png" width="1200" height="500">
 
 ## Prerequsites
 
