@@ -344,21 +344,3 @@ Resources:
           Value: !Ref environment
         - Key: Project
           Value: !Ref project
-
-
-
-
-
-
-
-
-            
-
-
-
-      
-
-
-
-
-
