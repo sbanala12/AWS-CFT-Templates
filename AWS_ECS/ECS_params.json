@@ -1,0 +1,80 @@
+[
+   
+    {
+       "ParameterKey": "project",
+       "ParameterValue": "training"
+    },
+    {
+       "ParameterKey": "environment",
+       "ParameterValue": "eng"
+    },
+    {
+       "ParameterKey": "appname",
+       "ParameterValue": "training"
+    },
+    {
+       "ParameterKey": "DomainName",
+       "ParameterValue": "eng.iac-training.com"
+    },
+    {
+       "ParameterKey": "hostedzonename",
+       "ParameterValue": "iac-training.com"
+    },
+    {
+        "ParameterKey": "certficate",
+        "ParameterValue": "7b0cf501-7d7d-4118-b7be-898ce58fe223"
+     },
+    {
+       "ParameterKey": "hostedzoneidvalue",
+       "ParameterValue": "Z02609151CNLR3BNFRJGV"
+    },
+    {
+       "ParameterKey": "cfhostedzoneidvalue",
+       "ParameterValue": "Z2FDTNDATAQYW2"
+    },
+    {
+      "ParameterKey": "ContainerCpu",
+      "ParameterValue": "512"
+    },
+    {
+      "ParameterKey": "ContainerMemory",
+      "ParameterValue": "1024"
+    },
+    {
+       "ParameterKey": "ImageUrl",
+       "ParameterValue": "994614923054.dkr.ecr.us-east-1.amazonaws.com/eng-training-ecr:latest"
+    },
+    {
+       "ParameterKey": "ecsServicename",
+       "ParameterValue": "eng-training-svc"
+    },
+    {
+       "ParameterKey": "ContainerName",
+       "ParameterValue": "eng-training"
+    },
+    {
+       "ParameterKey": "ContainerPort",
+       "ParameterValue": "80"
+    },
+    {
+       "ParameterKey": "VPCID",
+       "ParameterValue": "vpc-0c605a645635a6af9"
+    },
+    {
+        "ParameterKey": "CidrIP",
+        "ParameterValue": "172.31.0.0/16"
+     },
+    {
+       "ParameterKey": "LogGroupName",
+       "ParameterValue": "eng-training"
+    },
+    {
+      "ParameterKey": "PublicSubnet1",
+      "ParameterValue": "subnet-05c5e0558ee911263"
+    },
+    {
+      "ParameterKey": "PublicSubnet2",
+      "ParameterValue": "subnet-0c0884bc58fb304d9"
+    }
+    
+    ]

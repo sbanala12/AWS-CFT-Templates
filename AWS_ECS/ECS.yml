@@ -1,0 +1,346 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description:  AWS ECS Fargate infrastrcuture
+
+###########################################################################################################
+## PARAMETER SECTION
+###########################################################################################################
+
+Parameters:
+  project:
+    Description: Name of the project 
+    Type: String
+  environment:
+    Description: Environment to setup eng, sat, prod 
+    Type: String
+  appname:
+    Description: Name of the application or app prefix  
+    Type: String
+  DomainName:
+    Description:  Domain name 
+    Type: String
+  certficate:
+    Description: Domain certficate value 
+    Type: String  
+  hostedzonename:
+    Description: hostedzone name 
+    Type: String
+  hostedzoneidvalue:
+    Description: hostedzone id value 
+    Type: String
+  ImageUrl:
+    Description: image url 
+    Type: String
+  ecsServicename:
+    Description: ecs service name 
+    Type: String
+  ContainerName:
+    Description: container name 
+    Type: String
+  ContainerCpu:
+    Description: Container CPU value
+    Type: String
+  ContainerMemory:
+    Description: Container Memory Value 
+    Type: String 
+  ContainerPort:
+    Description: Container port 
+    Type: String
+  VPCID:
+    Description: Name of VPC 
+    Type: String
+  CidrIP:
+    Description: Cidr IP 
+    Type: String  
+  LogGroupName:
+    Description: ECS log group name 
+    Type: String
+  PublicSubnet1: 
+    Description: subnet1 details 
+    Type: String
+  PublicSubnet2:
+    Description: subnet2 details 
+    Type: String
+
+Resources:
+  
+#################################################################################################################
+## ECS CLUSTER
+################################################################################################################
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${environment}-${appname}-ecscluster"
+      Tags:
+        - Key: Environment 
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+#################################################################################################################
+### ECS Log Group 
+#################################################################################################################
+  ECSLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      RetentionInDays: 7
+      Tags:
+        - Key: Environment 
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+
+###############################################################################################################
+## ECS IAM ROLES
+###############################################################################################################  
+  ECSExecutionRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: !Sub '${environment}-${project}-ecsexecutionRole'
+      AssumeRolePolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: AmazonECSTaskExecutionRolePolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                # Allow the ECS Tasks to download images from ECR
+                - 'ecr:GetAuthorizationToken'
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'ecr:BatchGetImage'
+
+                # Allow the ECS tasks to upload logs to CloudWatch
+                - 'logs:CreateLogStream'
+                - 'logs:PutLogEvents'
+              Resource: '*'          
+      Tags:
+        - Key: Environment 
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project          
+
+  # This is an IAM role which authorizes ECS to manage resources on AWS
+  # account  such as updating our load balancer 
+    
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${environment}-${project}-ecstaskRole'
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs.amazonaws.com
+          Action: "sts:AssumeRole"
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              # Rules which allow ECS to attach network interfaces to instances
+              #  in order for awsvpc networking mode to work right
+              - 'ec2:AttachNetworkInterface'
+              - 'ec2:CreateNetworkInterface'
+              - 'ec2:CreateNetworkInterfacePermission'
+              - 'ec2:DeleteNetworkInterface'
+              - 'ec2:DeleteNetworkInterfacePermission'
+              - 'ec2:Describe*'
+              - 'ec2:DetachNetworkInterface'
+
+              # Rules which allow ECS to update load balancers 
+              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+              - 'elasticloadbalancing:DeregisterTargets'
+              - 'elasticloadbalancing:Describe*'
+              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+              - 'elasticloadbalancing:RegisterTargets'
+            Resource: '*'
+      Tags:
+        - Key: Environment 
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+
+# ##########################################################################################################
+# ## ECS TASK DEFINITION
+# ##########################################################################################################
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${environment}-${appname}-td"
+      TaskRoleArn: !Ref ECSTaskRole
+      ExecutionRoleArn: !Ref ECSExecutionRole
+      NetworkMode: "awsvpc"
+      Cpu: !Ref ContainerCpu
+      Memory: !Ref ContainerMemory
+      RequiresCompatibilities:
+        - "FARGATE"
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+      ContainerDefinitions:
+        - Name: !Ref ContainerName
+          Image: !Ref ImageUrl
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+              HostPort: 80
+              Protocol: "tcp"
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Ref ECSLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: "ecs"
+##############################################################################################################
+## ECR Repository
+##############################################################################################################
+  MyECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${environment}-${appname}-ecr"
+      ImageTagMutability: MUTABLE
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+# ##############################################################################################################
+# ## ECS SECURITY GROUPS
+# ##############################################################################################################
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${environment}-${appname}-container-sg"
+      GroupDescription: "Security group for ECS Container Traffic"
+      VpcId: !Ref VPCID
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+        - Key: Name
+          Value: !Sub "${environment}-${appname}-container-sg"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref CidrIP
+        - IpProtocol: tcp
+          FromPort:  80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ECSELBSecurityGroup
+  ECSELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${environment}-${appname}-elb-sg"
+      GroupDescription: "Security group for ALB to ECS Traffic"
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp 
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+        - Key: Name
+          Value: !Sub "${environment}-${appname}-elb-sg"
+
+# #############################################################################################################
+# ## ECS LOAD BALANCER ( TargetGroup , Listener, Load Balancer)
+# #############################################################################################################
+#   ##### TARGET GROUP   
+  ECSELBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 90
+      HealthCheckTimeoutSeconds: 60
+      HealthCheckPath: '/'
+      HealthCheckPort: 80
+      HealthCheckProtocol: "HTTP"
+      Name: !Sub "${environment}-${appname}-tg"
+      TargetType: ip
+      VpcId: !Ref VPCID
+      Protocol: HTTP
+      Port: 80
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+##### LISTENER  
+  ListenerHTTPS:
+    DependsOn: ECSLoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ECSELBTargetGroup
+      LoadBalancerArn: !Ref ECSLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Sub "arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${certficate}"
+      SslPolicy: ELBSecurityPolicy-2016-08
+##### LOADBALANCER  
+  ECSLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${environment}-${appname}-elb"
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref ECSELBSecurityGroup
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
+# ############################################################################################################
+# ## ECS SERVICE##
+# ############################################################################################################
+  ECSService:
+    DependsOn: ListenerHTTPS
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      TaskDefinition: !Ref ECSTaskDefinition
+      ServiceName: !Ref ecsServicename
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+      HealthCheckGracePeriodSeconds: 30
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          AssignPublicIp: ENABLED
+      LoadBalancers:
+        - ContainerName: !Ref ContainerName
+          TargetGroupArn: !Ref ECSELBTargetGroup
+          ContainerPort: !Ref ContainerPort
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+        - Key: Project
+          Value: !Ref project
