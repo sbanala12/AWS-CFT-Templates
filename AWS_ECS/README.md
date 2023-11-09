@@ -27,9 +27,9 @@
    - To authenticate your AWS account from the command line, use the 'aws configure' command to set up your credentials.
 
   $ aws configure 
-  AWS Access Key ID [****************PTWV]: 
-  AWS Secret Access Key [****************MjpZ]:
-  Default region name [us-east-1]: us-east-1  
+  ##### AWS Access Key ID [****************PTWV]: 
+  ##### AWS Secret Access Key [****************MjpZ]:
+  ##### Default region name [us-east-1]: us-east-1  
   
 ## Step 03 - Deploy Cloudformation Template 
 
