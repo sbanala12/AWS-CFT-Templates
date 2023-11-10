@@ -1,24 +1,22 @@
+[
 {
     "ParameterKey": "project",
     "ParameterValue": "training"
- },
- {
-    "ParameterKey": "environment",
+},
+{
+    "ParameterKey": "SysLevel",
     "ParameterValue": "dev"
  },
  {
     "ParameterKey": "AppName",
-    "ParameterValue": "training"
+    "ParameterValue": "trainingapp"
  },
  {
-    "ParameterKey": "callBackURl",
+    "ParameterKey": "callBackURL",
     "ParameterValue": "https://dev.iac-training.com"
  },
  {
     "ParameterKey": "UserPoolName",
-    "ParameterValue": "training"
- },
- {
-    "ParameterKey": "Syslevel",
-    "ParameterValue": "dev"
+    "ParameterValue": "trainingpool"
  }
+]

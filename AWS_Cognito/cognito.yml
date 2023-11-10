@@ -2,45 +2,30 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: CloudFormation template for the creating AWS cognito user pools
 Parameters:
   AppName:
-    Default: ''
-    Description: App Prefix to create User pool
-    Type: String
-  UserPoolName:
-    Default: ''
-    Description: User Pool Name
+    AllowedPattern: '[a-z0-9-]+'
+    Description: App Prefix to create User pool. Lowercase only, no special characters except hyphens.
     Type: String
   callBackURL:
-    Default: ''
     Description: Call back url changes for each region
     Type: String
-  TeacherDomain:
-    Default: ''
-    Description: Domain changes for each region
-    Type: String
+  # TeacherDomain:
+  #   Description: Domain changes for each region
+  #   Type: String
   StudentDomain:
     Default: ''
     Description: Domain changes for each region
     Type: String
   SysLevel:
-    Default: ''
     Description: Syslevel contains Dev|Test|Prod
     Type: String
   UserPoolName:
-    Default: ''
     Description: Cognito User Pool Name
     Type: String
 Resources:
   UserPoolStudent:
     Type: 'AWS::Cognito::UserPool'
     Properties:
-      UserPoolName: !Join 
-        - ''
-        - - !Join 
-            - ''
-            - - !Ref UserPoolName
-              - _
-              - !Ref SysLevel
-              - _Student_UserPool
+      UserPoolName: !Sub "${UserPoolName}-${SysLevel}_Student_UserPool"
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -86,14 +71,7 @@ Resources:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
       UserPoolId: !Ref UserPoolStudent
-      ClientName: !Join 
-        - ''
-        - - !Join 
-            - ''
-            - - !Ref UserPoolName
-              - _
-              - !Ref SysLevel
-              - _Student_App_Client
+      ClientName: !Sub "${UserPoolName}-${SysLevel}_Student_App_Client"
       RefreshTokenValidity: 30
       ExplicitAuthFlows:
         - ALLOW_CUSTOM_AUTH
@@ -103,19 +81,12 @@ Resources:
   UserPoolStudentDomain:
     Type: 'AWS::Cognito::UserPoolDomain'
     Properties:
-      Domain: !Sub '${AppName}'-student-${Syslevel}'
+      Domain: !Sub "${AppName}-${SysLevel}-student"
       UserPoolId: !Ref UserPoolStudent
   TeacherPool:
     Type: 'AWS::Cognito::UserPool'
     Properties:
-      UserPoolName: !Join 
-        - ''
-        - - !Join 
-            - ''
-            - - !Ref UserPoolName
-              - _
-              - !Ref SysLevel
-              - _TeacherPool
+      UserPoolName: !Sub "${UserPoolName}-${SysLevel}_TeacherPool"
       Policies:
         PasswordPolicy:
           MinimumLength: 6
@@ -141,7 +112,7 @@ Resources:
           StringAttributeConstraints:
             MinLength: '1'
             MaxLength: '256'
-        - Name: store_name
+        - Name: school_name
           AttributeDataType: String
           DeveloperOnlyAttribute: false
           Mutable: true
@@ -149,7 +120,7 @@ Resources:
           StringAttributeConstraints:
             MinLength: '1'
             MaxLength: '256'
-        - Name: store_zip
+        - Name: school_zip
           AttributeDataType: String
           DeveloperOnlyAttribute: false
           Mutable: true
@@ -214,14 +185,7 @@ Resources:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
       UserPoolId: !Ref TeacherPool
-      ClientName: !Join 
-        - ''
-        - - !Join 
-            - ''
-            - - !Ref UserPoolName
-              - _
-              - !Ref SysLevel
-              - _App_Client
+      ClientName: !Sub "${UserPoolName}-${SysLevel}_App_Client"
       RefreshTokenValidity: 30
       ReadAttributes:
         - address
@@ -230,8 +194,8 @@ Resources:
         - 'custom:last_name'
         - 'custom:privacy_policy'
         - 'custom:reference'
-        - 'custom:store_name'
-        - 'custom:store_zip'
+        - 'custom:school_name'
+        - 'custom:school_zip'
         - 'custom:term_conditions'
         - email
         - email_verified
@@ -298,7 +262,7 @@ Resources:
   TeacherPoolDomain:
     Type: 'AWS::Cognito::UserPoolDomain'
     Properties:
-      Domain: !Sub '${TeacherDomain}'
+      Domain: !Sub "${AppName}-${SysLevel}"
       UserPoolId: !Ref TeacherPool  
 
 Outputs:
