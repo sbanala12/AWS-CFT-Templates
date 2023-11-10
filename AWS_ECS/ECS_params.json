@@ -42,7 +42,7 @@
     },
     {
        "ParameterKey": "ImageUrl",
-       "ParameterValue": "994614923054.dkr.ecr.us-east-1.amazonaws.com/eng-training-ecr:latest"
+       "ParameterValue": "nginx:latest"
     },
     {
        "ParameterKey": "ecsServicename",
