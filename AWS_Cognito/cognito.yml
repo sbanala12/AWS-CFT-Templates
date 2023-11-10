@@ -1,0 +1,312 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template for the creating AWS cognito user pools
+Parameters:
+  AppName:
+    Default: ''
+    Description: App Prefix to create User pool
+    Type: String
+  UserPoolName:
+    Default: ''
+    Description: User Pool Name
+    Type: String
+  callBackURL:
+    Default: ''
+    Description: Call back url changes for each region
+    Type: String
+  TeacherDomain:
+    Default: ''
+    Description: Domain changes for each region
+    Type: String
+  StudentDomain:
+    Default: ''
+    Description: Domain changes for each region
+    Type: String
+  SysLevel:
+    Default: ''
+    Description: Syslevel contains Dev|Test|Prod
+    Type: String
+  UserPoolName:
+    Default: ''
+    Description: Cognito User Pool Name
+    Type: String
+Resources:
+  UserPoolStudent:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: !Join 
+        - ''
+        - - !Join 
+            - ''
+            - - !Ref UserPoolName
+              - _
+              - !Ref SysLevel
+              - _Student_UserPool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: 'false'
+          RequireLowercase: 'false'
+          RequireNumbers: 'false'
+          RequireSymbols: 'false'
+          TemporaryPasswordValidityDays: 365
+      Schema:
+        - Name: first_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '1'
+            MaxLength: '256'
+      AliasAttributes:
+        - preferred_username
+      SmsVerificationMessage: 'Your verification code is {####}. '
+      EmailVerificationMessage: 'Your verification code is {####}. '
+      EmailVerificationSubject: 'Your authentication code is {####}. '
+      SmsAuthenticationMessage: 'Your authentication code is {####}. '
+      MfaConfiguration: 'OFF'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+        InviteMessageTemplate:
+          SMSMessage: 'Your username is {username} and temporary password is {####}. '
+          EmailMessage: 'Your username is {username} and temporary password is {####}. '
+          EmailSubject: Your Temporary password
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Priority: 1
+            Name: verified_email
+      UsernameConfiguration:
+        CaseSensitive: false
+      UserPoolTags:
+        key: Name
+        Value: Student Pool Name
+  UserPoolStudentClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      UserPoolId: !Ref UserPoolStudent
+      ClientName: !Join 
+        - ''
+        - - !Join 
+            - ''
+            - - !Ref UserPoolName
+              - _
+              - !Ref SysLevel
+              - _Student_App_Client
+      RefreshTokenValidity: 30
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+  UserPoolStudentDomain:
+    Type: 'AWS::Cognito::UserPoolDomain'
+    Properties:
+      Domain: !Sub '${AppName}'-student-${Syslevel}'
+      UserPoolId: !Ref UserPoolStudent
+  TeacherPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: !Join 
+        - ''
+        - - !Join 
+            - ''
+            - - !Ref UserPoolName
+              - _
+              - !Ref SysLevel
+              - _TeacherPool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 6
+          RequireUppercase: 'true'
+          RequireLowercase: 'true'
+          RequireNumbers: 'true'
+          RequireSymbols: 'true'
+          TemporaryPasswordValidityDays: 7
+      Schema:
+        - Name: first_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '1'
+            MaxLength: '256'
+        - Name: last_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '1'
+            MaxLength: '256'
+        - Name: store_name
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '1'
+            MaxLength: '256'
+        - Name: store_zip
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '1'
+            MaxLength: '256'
+        - Name: reference
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '1'
+            MaxLength: '256'
+        - Name: term_conditions
+          AttributeDataType: Number
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '0'
+            MaxLength: '5'
+        - Name: privacy_policy
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: '0'
+            MaxLength: '5'
+      AutoVerifiedAttributes: 
+        - email
+      UsernameAttributes:
+        - email
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate: 
+          - email
+      SmsVerificationMessage: 'Your verification code is {####}. '
+      EmailVerificationMessage: 'Your verification code is {####}. '
+      EmailVerificationSubject: 'Your authentication code is {####}. '
+      SmsAuthenticationMessage: 'Your authentication code is {####}. '
+      MfaConfiguration: 'OFF'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+        InviteMessageTemplate:
+          SMSMessage: 'Your username is {username} and temporary password is {####}. '
+          EmailMessage: 'Your username is {username} and temporary password is {####}. '
+          EmailSubject: Your Temporary password
+      UserPoolTags:
+        key: Name
+        Value: Training Teacher Pool Name
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Priority: 1
+            Name: verified_email
+      UsernameConfiguration:
+        CaseSensitive: false
+  TeacherPoolClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      UserPoolId: !Ref TeacherPool
+      ClientName: !Join 
+        - ''
+        - - !Join 
+            - ''
+            - - !Ref UserPoolName
+              - _
+              - !Ref SysLevel
+              - _App_Client
+      RefreshTokenValidity: 30
+      ReadAttributes:
+        - address
+        - birthdate
+        - 'custom:first_name'
+        - 'custom:last_name'
+        - 'custom:privacy_policy'
+        - 'custom:reference'
+        - 'custom:store_name'
+        - 'custom:store_zip'
+        - 'custom:term_conditions'
+        - email
+        - email_verified
+        - family_name
+        - gender
+        - given_name
+        - locale
+        - middle_name
+        - name
+        - nickname
+        - phone_number
+        - phone_number_verified
+        - picture
+        - preferred_username
+        - profile
+        - updated_at
+        - website
+        - zoneinfo
+      WriteAttributes:
+        - address
+        - birthdate
+        - 'custom:first_name'
+        - 'custom:last_name'
+        - 'custom:privacy_policy'
+        - 'custom:reference'
+        - 'custom:school_name'
+        - 'custom:school_zip'
+        - 'custom:term_conditions'
+        - email
+        - family_name
+        - gender
+        - given_name
+        - locale
+        - middle_name
+        - name
+        - nickname
+        - phone_number
+        - picture
+        - preferred_username
+        - profile
+        - updated_at
+        - website
+        - zoneinfo
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      PreventUserExistenceErrors: LEGACY
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - !Ref callBackURL
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+      AllowedOAuthFlowsUserPoolClient: true
+      IdTokenValidity: 60
+      AccessTokenValidity: 60
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+  TeacherPoolDomain:
+    Type: 'AWS::Cognito::UserPoolDomain'
+    Properties:
+      Domain: !Sub '${TeacherDomain}'
+      UserPoolId: !Ref TeacherPool  
+
+Outputs:
+  TeacherPoolName:
+    Description: The ID of the Cognito teacher Pool 
+    Value: !Ref TeacherPool
+
+  StudentPoolName:
+    Description: The ID of the Cognito student Pool 
+    Value: !Ref UserPoolStudent
+  
