@@ -344,3 +344,16 @@ Resources:
           Value: !Ref environment
         - Key: Project
           Value: !Ref project
+
+###########################################################################################################
+## ROUTE 53 DNS RECORD
+###########################################################################################################          
+  ECSDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref hostedzoneidvalue
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt ECSLoadBalancer.CanonicalHostedZoneID
+        DNSName: !GetAtt ECSLoadBalancer.DNSName

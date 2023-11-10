@@ -6,7 +6,7 @@
     },
     {
        "ParameterKey": "environment",
-       "ParameterValue": "eng"
+       "ParameterValue": "dev"
     },
     {
        "ParameterKey": "appname",
@@ -14,7 +14,7 @@
     },
     {
        "ParameterKey": "DomainName",
-       "ParameterValue": "eng.iac-training.com"
+       "ParameterValue": "dev.iac-training.com"
     },
     {
        "ParameterKey": "hostedzonename",
@@ -26,7 +26,7 @@
      },
     {
        "ParameterKey": "hostedzoneidvalue",
-       "ParameterValue": "Z02609151CNLR3BNFRJGV"
+       "ParameterValue": "Z0302953BF7A2TRLLKJS"
     },
     {
        "ParameterKey": "cfhostedzoneidvalue",
