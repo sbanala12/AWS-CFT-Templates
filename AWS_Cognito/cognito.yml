@@ -309,23 +309,4 @@ Outputs:
   StudentPoolName:
     Description: The ID of the Cognito student Pool 
     Value: !Ref UserPoolStudent
-    
-################# defaults.json ################
-#{
-#    "CiBuildSuffix": "",
-#    "BranchDeploySuffix":"",
-#    "AppPrefix": "XBH",
-#    "LOB": "CS",
-#    "SysLevel":"",
-#    "XBHUserPoolName": "XBH_MyCE",
-#    "LambdaFunction": "lambda-XBH-ui-myce-digital-emailconfirmation"
-#}
-
-################## vgi-ess-eng.json 
-#{
-#    "SysLevel": "Eng",
-#    "callBackURL": "https://xbh-myce-digital-ui-external.ecs.us-east-1.esse.c1.vanguard.com",
-#    "TeacherDomain": "myce-digital-eng",
-#    "StudentDomain": "myce-digital-student-eng",
-#    "KmsKey": "c1552de5-3388-4c5d-a2dd-d18690e10646"
-#}    
+  
